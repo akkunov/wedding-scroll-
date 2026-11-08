@@ -1,0 +1,10 @@
+import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { wedding } from '../config/wedding';
+interface Props { open:boolean; onClose:()=>void }
+export function RsvpDialog({open,onClose}:Props){
+  const dialog=useRef<HTMLDialogElement>(null);const [guest,setGuest]=useState(''),[count,setCount]=useState('1'),[status,setStatus]=useState('');
+  useEffect(()=>{try{const saved=JSON.parse(localStorage.getItem(wedding.rsvp.storageKey)??'null');if(saved&&typeof saved.guest==='string'){setGuest(saved.guest.slice(0,80));setCount(String(Math.min(wedding.rsvp.maxGuests,Math.max(1,Number(saved.count)||1))));}}catch{/* Storage is optional. */}},[]);
+  useEffect(()=>{if(open&&!dialog.current?.open)dialog.current?.showModal();else if(!open&&dialog.current?.open)dialog.current.close();},[open]);
+  function submit(event:FormEvent){event.preventDefault();if(!guest.trim()){setStatus('Укажите ваше имя.');return;}try{localStorage.setItem(wedding.rsvp.storageKey,JSON.stringify({guest:guest.trim(),count:Number(count)}));setStatus('Тестовый ответ сохранён в этом браузере. Спасибо!');}catch{setStatus('Браузер запретил сохранение. Ответ не сохранён.');}}
+  return <dialog ref={dialog} onClose={onClose} aria-labelledby="rsvp-title" onClick={e=>{if(e.target===dialog.current){const r=dialog.current.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)onClose();}}}><form onSubmit={submit}><button type="button" className="close" onClick={onClose} aria-label="Закрыть">×</button><p className="eyebrow">ДО ВСТРЕЧИ</p><h2 id="rsvp-title">{wedding.rsvp.title}</h2><p>{wedding.rsvp.description}</p><label>Ваше имя<input required maxLength={80} autoComplete="name" value={guest} onChange={e=>setGuest(e.target.value)} placeholder="Как к вам обращаться?"/></label><label>Количество гостей<select value={count} onChange={e=>setCount(e.target.value)}>{Array.from({length:wedding.rsvp.maxGuests},(_,i)=><option key={i+1} value={i+1}>{i+1}</option>)}</select></label><button className="primary" type="submit">Сохранить тестовый ответ <span>↗</span></button><p role="status">{status}</p></form></dialog>;
+}
