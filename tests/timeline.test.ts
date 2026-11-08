@@ -6,6 +6,9 @@ import { createCouple, createLocations } from '../src/sculpture.js';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { createElement } from 'react';
 import App from '../src/App.tsx';
+import * as T from 'three';
+import { createDetailedCouple } from '../src/scene/detailedCouple.ts';
+import { noteEvents } from '../src/audio/piano.ts';
 
 test('timeline is bounded and rotates one full turn',()=>{
   for(let i=-10;i<=110;i++){const s=getSceneState(i/100);assert.ok(s.garden>=0&&s.garden<=1);assert.ok(s.hall>=0&&s.hall<=1);assert.ok(Number.isFinite(s.rotation));}
@@ -19,4 +22,11 @@ test('scene geometry and instance transforms are finite',()=>{
 });
 test('React renders configured names, schedule, navigation and dialog',()=>{
   const html=renderToStaticMarkup(createElement(App));assert.ok(html.includes(wedding.bride));assert.ok(!html.includes('Алина'));assert.ok(html.includes('18:00'));assert.ok(html.includes('id="rsvp"'));assert.ok(html.includes('id="rsvp-title"'));assert.ok(html.includes('inert=""'));
+});
+
+test('detailed couple is full-body, finite, and includes portrait and wedding details',()=>{
+  const couple=createDetailedCouple();couple.updateMatrixWorld(true);const bounds=new T.Box3().setFromObject(couple),size=bounds.getSize(new T.Vector3());assert.ok(size.y>2.2&&size.y<3);assert.ok(couple.getObjectByName('Elina-portrait'));assert.ok(couple.getObjectByName('Adilet-portrait'));assert.ok(couple.getObjectByName('dress-and-hair-pearls'));let triangles=0;couple.traverse(node=>{if(node instanceof T.Mesh){const p=node.geometry.attributes.position;for(const value of p.array)assert.ok(Number.isFinite(value));triangles+=(node.geometry.index?.count??p.count)/3;}});assert.ok(triangles>10000&&triangles<150000);
+});
+test('original music has bounded, valid notes and a finite duration',()=>{
+  const {events,duration}=noteEvents();assert.ok(duration>30&&duration<90);assert.ok(events.length>100);for(const event of events){assert.ok(event.time>=0&&event.time<duration);assert.ok(event.duration>0);assert.ok(event.midi>=24&&event.midi<=100);assert.ok(event.gain>0&&event.gain<=.2);}
 });

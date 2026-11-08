@@ -20,5 +20,7 @@ export const wedding = {
   ],
   rsvp: { button: 'Я буду рядом', title: 'Будем ждать.', description: 'Это тестовая форма. Ответ сохраняется только в этом браузере и не отправляется организаторам.', storageKey: 'ivory-wedding-demo-rsvp', maxGuests: 4 },
   appearance: { background: '#f4eee5', text: '#665241', accent: '#a88c73' },
+  music: { enabled: true, title: 'Белая история · инструментальная миниатюра', volume: 0.3 },
+  model: { url: 'models/adilet-elina.glb' },
   animation: { scrollScreens: 5, damping: 7, maxPixelRatio: 1.6, rotation: Math.PI * 2 },
 } as const;
