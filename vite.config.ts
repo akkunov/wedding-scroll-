@@ -4,7 +4,7 @@ import { wedding } from './src/config/wedding.ts';
 const escape=(text:string)=>text.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
 export default defineConfig({
   plugins:[react(),{name:'wedding-metadata',transformIndexHtml(html){
-    return html.replace(/<title>.*?<\/title>/,`<title>${escape(`${wedding.groom} & ${wedding.bride} — Белая история`)}</title>`)
+    return html.replace(/<title>.*?<\/title>/,`<title>${escape(`${wedding.groom} & ${wedding.bride} — Под одной луной`)}</title>`)
       .replace(/<meta name="description" content="[^"]*">/,`<meta name="description" content="${escape(wedding.description)}">`);
   }}],
   base:'./',

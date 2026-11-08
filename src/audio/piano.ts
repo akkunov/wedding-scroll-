@@ -1,8 +1,8 @@
 /** An original, synthesized piano-like instrumental. No third-party song or recording. */
 export const score = {
   tempo: 68,
-  chords: [[48,55,60,64],[45,52,57,60],[41,48,53,57],[43,50,55,59]],
-  melody: [[76,74,72,67],[72,71,69,64],[69,67,65,64],[67,71,74,72]],
+  chords: [[50,57,62,65],[46,53,58,62],[43,50,55,58],[45,52,57,61]],
+  melody: [[77,76,74,69],[74,72,70,65],[70,69,67,65],[69,73,76,74]],
 } as const;
 const frequency=(midi:number)=>440*2**((midi-69)/12);
 export function noteEvents(){

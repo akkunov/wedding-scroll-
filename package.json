@@ -9,9 +9,7 @@
     "preview": "vite preview --host 0.0.0.0",
     "typecheck": "tsc --noEmit",
     "test": "node --import tsx --test tests/*.test.ts",
-    "generate:model": "node --import tsx scripts/export-couple.ts",
-    "prebuild": "npm run generate:model",
-    "predev": "npm run generate:model"
+    "generate:model": "node --import tsx scripts/export-couple.ts"
   },
   "dependencies": {
     "react": "^19.3.1",

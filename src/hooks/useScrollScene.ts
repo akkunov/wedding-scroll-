@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { wedding } from '../config/wedding';
 import { clamp, getPanelState, getSceneState } from '../scene/timeline';
-import type { SceneController } from '../scene/createScene';
+import { createSketchfabScene, type ViewerStatus } from '../scene/sketchfabScene';
+type SceneController=ReturnType<typeof createSketchfabScene>;
 
 export function useScrollScene(){
   const trackRef=useRef<HTMLElement>(null),stageRef=useRef<HTMLDivElement>(null),canvasRef=useRef<HTMLDivElement>(null);
-  const [active,setActive]=useState(0),[sceneStatus,setSceneStatus]=useState<'loading'|'ready'|'unavailable'>('loading');
+  const [active,setActive]=useState(0),[sceneStatus,setSceneStatus]=useState<ViewerStatus>('loading');
   useEffect(()=>{
     const track=trackRef.current,stage=stageRef.current,host=canvasRef.current;
     if(!track||!stage||!host)return;
@@ -18,6 +19,8 @@ export function useScrollScene(){
       current=preference.matches?target:current+(target-current)*(1-Math.exp(-wedding.animation.damping*delta));
       if(Math.abs(current-target)<.00005)current=target;
       stage!.style.setProperty('--progress',String(current));
+      stage!.style.setProperty('--moon-x',`${Math.sin(current*Math.PI)*30}px`);
+      stage!.style.setProperty('--hills-x',`${-current*45}px`);
       panels.forEach((panel,index)=>{const s=getPanelState(current,index,preference.matches);panel.style.setProperty('--panel-opacity',String(s.opacity));panel.style.setProperty('--panel-y',`${s.translateY}px`);panel.style.setProperty('--panel-blur',`${s.blur}px`);});
       const chapter=getSceneState(current).chapter;if(chapter!==lastChapter){lastChapter=chapter;setActive(chapter);}
       controller?.update(current,preference.matches);
@@ -33,11 +36,7 @@ export function useScrollScene(){
     document.addEventListener('visibilitychange',visibility);
     preference.addEventListener('change',request);
     const observer=new ResizeObserver(resize);observer.observe(stage);
-    import('../scene/createScene').then(({createScene})=>{
-      if(disposed)return;
-      try{controller=createScene(host,()=>setSceneStatus('unavailable'));controller.resize();setSceneStatus('ready');request();}
-      catch(error){console.warn('3D scene unavailable',error);setSceneStatus('unavailable');}
-    }).catch(()=>{if(!disposed)setSceneStatus('unavailable');});
+    controller=createSketchfabScene(host,setSceneStatus,request);
     return()=>{disposed=true;cancelAnimationFrame(frame);observer.disconnect();window.removeEventListener('scroll',measure);document.removeEventListener('visibilitychange',visibility);preference.removeEventListener('change',request);controller?.dispose();};
   },[]);
   return {trackRef,stageRef,canvasRef,active,sceneStatus};

@@ -9,6 +9,7 @@ import App from '../src/App.tsx';
 import * as T from 'three';
 import { createDetailedCouple } from '../src/scene/detailedCouple.ts';
 import { noteEvents } from '../src/audio/piano.ts';
+import { orbitCamera } from '../src/scene/sketchfabCamera.ts';
 
 test('timeline is bounded and rotates one full turn',()=>{
   for(let i=-10;i<=110;i++){const s=getSceneState(i/100);assert.ok(s.garden>=0&&s.garden<=1);assert.ok(s.hall>=0&&s.hall<=1);assert.ok(Number.isFinite(s.rotation));}
@@ -29,4 +30,12 @@ test('detailed couple is full-body, finite, and includes portrait and wedding de
 });
 test('original music has bounded, valid notes and a finite duration',()=>{
   const {events,duration}=noteEvents();assert.ok(duration>30&&duration<90);assert.ok(events.length>100);for(const event of events){assert.ok(event.time>=0&&event.time<duration);assert.ok(event.duration>0);assert.ok(event.midi>=24&&event.midi<=100);assert.ok(event.gain>0&&event.gain<=.2);}
+});
+
+test('Sketchfab scroll orbit preserves target and completes a full turn',()=>{
+  const camera={position:[3,5,7] as [number,number,number],target:[1,2,3] as [number,number,number]};
+  assert.deepEqual(orbitCamera(camera,0).position,camera.position);assert.deepEqual(orbitCamera(camera,.5,true),camera);const end=orbitCamera(camera,1);end.position.forEach((x,i)=>assert.ok(Math.abs(x-camera.position[i])<1e-9));for(let i=0;i<101;i++){const pose=orbitCamera(camera,i/100);assert.ok(pose.position.every(Number.isFinite));assert.deepEqual(pose.target,camera.target);}
+});
+test('React includes the supplied Sketchfab model and visible author attribution',()=>{
+  const html=renderToStaticMarkup(createElement(App));assert.ok(html.includes('Jack And Sally'));assert.ok(html.includes('svyART'));assert.ok(html.includes('84dfe9166e0946b7a5a6976408483ec1'));assert.ok(html.includes('Рассмотреть 3D'));
 });
